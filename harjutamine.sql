@@ -119,3 +119,73 @@ FROM (Ruum AS R INNER JOIN Hotell AS H ON R.hotelli_nr=H.hotelli_nr)
 WHERE ((R.hind BETWEEN 100 AND 200) OR R.hind > 300);
 
 
+/* 24.03 praktikum */
+SELECT K.külalise_nr, Ucase(K.perenimi) AS perenimi, Count(*) AS res_arv, ROUND(AVG(R.lopu_aeg - R.alguse_aeg),1) AS keskm_res_pikkus
+FROM Külaline AS K, Reserveerimine AS R
+WHERE R.külalise_nr=K.külalise_nr
+GROUP BY K.külalise_nr, Ucase(K.perenimi)
+HAVING Count(*) >= 3
+ORDER BY Count(*) DESC, Ucase(K.perenimi);
+
+-- See oli vale
+SELECT DISTINCT K.külalise_nr, K.perenimi
+FROM Külaline AS K, Reserveerimine AS R, Hotell AS H
+WHERE H.linn <> 'Tallinn'
+AND  K.külalise_nr=R.külalise_nr
+AND  R.hotelli_nr=H.hotelli_nr
+ORDER BY K.külalise_nr;
+
+-- Õige -
+SELECT külalise_nr, perenimi
+FROM KÜLALINE
+WHERE külalise_nr NOT IN (
+SELECT külalise_nr
+FROM Reserveerimine
+WHERE hotelli_nr IN (SELECT hotelli_nr
+FROM Hotell
+WHERE linn='Tallinn'))
+ORDER BY külalise_nr;
+
+SELECT külalise_nr, perenimi
+FROM Külaline
+WHERE NOT EXISTS (
+SELECT külalise_nr
+FROM Reserveerimine
+WHERE hotelli_nr IN (SELECT hotelli_nr
+FROM Hotell
+WHERE linn='Tallinn')
+AND Külaline.külalise_nr = Reserveerimine.külalise_nr)
+ORDER BY külalise_nr;
+
+
+SELECT Count(*) AS arv
+FROM Külaline AS K, Reserveerimine
+WHERE K.külalise_nr = R.külalise_nr
+INNER JOIN Hotell AS H 
+ON R.hotelli_nr = H.hotelli_nr
+
+
+SELECT Count(*) AS arv
+FROM (Külaline AS K INNER JOIN Reserveerimine AS R ON K.külalise_nr=R.külalise_nr)
+INNER JOIN Hotell AS H ON R.hotelli_nr=H.hotelli_nr
+WHERE Eksam.tulemus BETWEEN 1 AND 5
+GROUP BY Tudeng.tudkood, Ucase(Tudeng.perenimi);
+
+SELECT Count (*) As arv
+FROM
+(SELECT DISTINCT Reserveerimine.külalise_nr
+FROM Reserveerimine INNER JOIN Hotell
+ON Reserveerimine.hotelli_nr = Hotell.hotelli_nr
+WHERE YEAR(Reserveerimine.alguse_aeg) = YEAR(Date())
+AND Hotell.nimi = 'Viru') AS tulemus;
+
+SELECT * 
+FROM (Ruum AS R
+INNER JOIN Hotell AS H
+ON R.hotelli_nr = H.hotelli_nr)
+INNER JOIN Reserveerimine AS Re
+ON H.hotelli_nr = Re.hotelli_nr))
+WHERE R.ruumi_tüüp = 'Äriklassi tuba'
+AND H.linn = 'Tallinn'
+AND R.hind BETWEEN 100 AND 200)
+
