@@ -189,3 +189,31 @@ WHERE R.ruumi_tüüp = 'Äriklassi tuba'
 AND H.linn = 'Tallinn'
 AND R.hind BETWEEN 100 AND 200)
 
+-- 31.03 praktikum
+-- Insert into kustutab vana tabeli = halb!!!
+SELECT aine_kood, nimetus INTO Aktiivne_oppeaine
+FROM Aine
+WHERE aine_kood IN (SELECT aine
+FROM Oppimine
+WHERE oppim_algus>=#2000-09-01#);
+
+/* 3. Lisada tabelisse "Aktiivne_oppeaine" kõigi selliste õppeainete andmed, millel on mõni 
+õppimine alanud 1. septembril 2000 või hiljem. Sellesse tabelisse tuleb lisada õppeaine nimetus ja kood, 
+kusjuures iga lisatava õppeaine andmed tuleb lisada ainult üks kord.  */
+INSERT INTO Aktiivne_oppeaine (aine_kood, nimetus)
+SELECT aine_kood, nimetus
+FROM Aine
+WHERE aine_kood IN (SELECT aine
+FROM Oppimine
+WHERE oppim_algus>=#2000-09-01#);
+
+/* 6. Kustutada tabelist "Tudeng" tudengid , kellel on rohkem kui kaks negatiivsete tulemustega eksamit (hinne 0) 
+ja kelle kõik õppimised on lõppenud eksamiga (eksami tulemuseks võib olla mistahes hinne). 
+Juhul kui kasutate tabelite ühendamist (joinimist), 
+tuleb tabelite ühendamise (joini) tingimused kirjutada WHERE klauslisse.  */
+SELECT tudeng, Count(*) AS arv
+FROM Eksam AS E, Oppimine AS O
+WHERE tulemus=0
+AND E.oppimine=O.oppimine
+GROUP BY tudeng
+HAVING Count(*)>2;
