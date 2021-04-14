@@ -383,3 +383,47 @@ FROM Reserveerimine INNER JOIN Hotell ON
 Reserveerimine.hotelli_nr = Hotell.Hotelli_nr
 WHERE Reserveerimine.alguse_aeg > DATEADD("D", -1000, Date())
 AND Hotell.nimi <> 'Viru')
+
+-- 14.04 praktikum
+/* 1) Leidke ERINEVATE külaliste arv, kes on hotellis nimega "Viru" teinud üle kolme reserveerimise.
+Päringu tulemuses peab olema veerg nimega arv. (1)
+ */
+SELECT Count(*) AS Arv
+FROM (SELECT R.külalise_nr
+FROM Reserveerimine R
+INNER JOIN Hotell H ON R.hotelli_nr=H.hotelli_nr
+WHERE H.nimi='Viru'
+GROUP BY R.külalise_nr
+HAVING Count(R.külalise_nr) > 3)  AS kylalised;
+
+/* 2) Milline on IGA hotelli reserveerimiste alguste arv jaanuarist märtsini (kaasa arvatud). 
+Päringu tulemuses peab olema kolm veergu.
+Väljastage hotelli nimi ning linn ühe stringina (veerus hotell), hotelli number ja reserveerimiste arv. 
+Kui hotellil pole nendel kuudel olnud ühtegi reserveerimist, siis on reserveerimiste arv 0. 
+vihjed: Selleks, et eraldada MS Accessis kuupäevast kuu numbrilist identifikaatorit, saab kasutada
+funktsiooni Month(kuupäev) 
+Stringide konkatenatsiooni operaator on MS Accessis & (1) */
+SELECT H.nimi&' '&H.linn AS hotell, H.hotelli_nr, Iif(res_arv IS NULL, 0, res_arv) AS res_arv
+FROM Hotell AS H
+LEFT JOIN(SELECT hotelli_nr, Count(*) AS res_arv
+FROM Reserveerimine
+WHERE Month(alguse_aeg) BETWEEN 1 AND 3
+GROUP BY hotelli_nr) AS Koond
+ON H.hotelli_nr=Koond.hotelli_nr
+
+/* 3.
+Arvutage välja kui palju on iga külaline, kellel on vähemalt üks reserveerimine, raha kulutanud. 
+Iga reserveeritud päeva eest tuleb maksta renditava ruumi rendihinda (paikneb tabeli Ruum veerus hind). 
+Vaadelge ainult reserveerimisi kus alguse ja lõpu aeg on teada.
+Väljastage külalise number, perenimi ja kulutatud rahasumma ümardatud kahe kohani peale koma. (1) */
+SELECT K.külalise_nr AS [Külalise nr], perenimi AS Perenimi, Summa
+FROM Külaline K, (SELECT Re.külalise_nr, Round(Sum((Re.lopu_aeg-Re.alguse_aeg)*Ru.hind), 2) AS Summa
+FROM Reserveerimine Re, Ruum Ru
+WHERE lopu_aeg IS NOT NULL
+AND alguse_aeg IS NOT NULL
+AND Re.hotelli_nr = Ru.hotelli_nr
+AND Re.ruumi_nr = Re.ruumi_nr
+GROUP BY Re.külalise_nr) AS Tulemus
+WHERE K.külalise_nr=Tulemus.külalise_nr;
+
+
